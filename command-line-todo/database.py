@@ -4,7 +4,7 @@ from typing import Generator
 
 Base = declarative_base()
 
-class List(base):
+class List(Base):
    __tablename__ = 'list'
 
    id = Column(Integer, primary_key = True)
