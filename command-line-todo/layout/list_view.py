@@ -2,34 +2,38 @@ from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.layout.containers import VSplit, HSplit, Window
 from prompt_toolkit.widgets import Frame
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
-from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.formatted_text import FormattedText
 
 from app import app_state
 
 def get_list_view_content():
+   fragments = []
 
-   lines = ['   <style bg="#2A4D69" bold> Select a To-Do List </style>\n']
+   # Header bar
+   fragments.append(('bg:#2A4D69 fg:white bold', '   Select a To-Do List '))
+   fragments.append(('', '\n'))
+
    all_lists = app_state.get_all_lists()
    selector = app_state.list_view_selection_index
 
    if not all_lists:
-      lines.append('   Press CTRL + A to add new To-Do List')
-      return HTML('\n'.join(lines))
+      fragments.append(('fg:#999999', '   Press CTRL + A to add new To-Do List'))
+      return FormattedText(fragments)
    
    for i, list in enumerate(all_lists):
       is_selected = (i == selector)
-
-      # style for selected item
       indicator = ' ➤ ' if is_selected else '   '
-
       task_count = len(list.tasks)
 
-      if is_selected:
-         lines.append(f'<reverse>{indicator} {list.name} ({task_count}) </reverse>')
-      else:
-         lines.append(f'{indicator} {list.name} ({task_count})') 
+      style = 'bg:#5CB3FF fg:black' if is_selected else 'fg:#CCCCCC'
+      fragments.append((style, f'{indicator} {list.name} ({task_count})'))
+      fragments.append(('', '\n'))
 
-   return HTML('\n'.join(lines))
+   # drop the trailing newline for a cleaner render
+   if fragments and fragments[-1][1] == '\n':
+      fragments.pop()
+
+   return FormattedText(fragments)
    
 
 list_view_control = FormattedTextControl(
@@ -82,4 +86,3 @@ root_container = VSplit([
    list_command_view_pane,
    shortcuts_pane
 ])
-
