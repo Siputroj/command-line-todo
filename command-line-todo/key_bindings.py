@@ -2,9 +2,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.filters import Condition
 
 from app import app_state
-from layout.main_view import main_layout
-from layout.list_view import list_view_control, command_buffer as list_view_command_buffer
-from layout.task_view import task_view_control, command_buffer as task_view_command_buffer
+from layout.view import main_layout, list_view_control, task_view_control, command_buffer
 
 kb = KeyBindings()
 
@@ -18,9 +16,16 @@ def exit_(event):
    event.app.exit()
 
 # Focus helpers
+in_task_view = Condition(lambda: app_state.in_task_view)
 in_list_view = Condition(lambda: not app_state.in_task_view)
-list_buffer_focused = Condition(lambda: main_layout.has_focus(list_view_command_buffer))
-list_control_focused = Condition(lambda: main_layout.has_focus(list_view_control))
+
+
+list_buffer_focused = Condition(lambda: main_layout.has_focus(command_buffer)) & in_list_view
+list_control_focused = Condition(lambda: main_layout.has_focus(list_view_control)) & in_list_view
+
+task_buffer_focused = Condition(lambda: main_layout.has_focus(command_buffer)) & in_task_view
+task_control_focused = Condition(lambda: main_layout.has_focus(list_view_control)) & in_task_view
+
 
 # Navigation for ListView
 @kb.add("up", filter=in_list_view & list_control_focused)
@@ -37,7 +42,7 @@ def _(event):
 
 @kb.add("i", filter=in_list_view & list_control_focused)
 def _(event):
-   event.app.layout.focus(list_view_command_buffer)
+   event.app.layout.focus(command_buffer)
 
 
 @kb.add("enter", filter=in_list_view & list_control_focused)
@@ -54,9 +59,9 @@ def _(event):
 
 @kb.add("enter", filter=in_list_view & list_buffer_focused)
 def _(event):
-   name = list_view_command_buffer.text.strip()
+   name = command_buffer.text.strip()
    # clear the command line
-   list_view_command_buffer.text = ''
+   command_buffer.text = ''
 
    if not name:
       return
