@@ -44,7 +44,8 @@ list_view_control = FormattedTextControl(
 )
 
 def get_task_view_content():
-   current_list_tasks = app_state.get_selected_list_data()
+   app_state.get_selected_list_data()
+   current_list_tasks = app_state.current_list_tasks
    list_name = current_list_tasks.name if current_list_tasks else "Error"
    selector = app_state.task_view_selection_index
 
