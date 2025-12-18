@@ -8,6 +8,7 @@ class ToDoApp:
 
    selected_list_id: int | None = None
    list_view_selection_index: int = 0
+   current_list_tasks: List | None = None
    task_view_selection_index: int = 0
    in_task_view: bool = False                   # check if current tab is task view or list_view
 
@@ -17,6 +18,9 @@ class ToDoApp:
    
 
    # LISTS Operations
+   # TODO: 
+   # might want to just store this as a variable instead of having to call it multiple times
+   
    def get_all_lists(self) -> List[DBList]:     # list of DBList object
       with next(self._get_db_session()) as db:
          return db.query(DBList).options(selectinload(DBList.tasks)).order_by(DBList.name).all()
@@ -33,9 +37,6 @@ class ToDoApp:
          db.add(new_list)
          db.commit()
 
-         # get the updated list of ToDoLists
-         all_lists = self.get_all_lists()
-         self.list_view_selection_index = len(all_lists) - 1
          return True
       except:
          return False
@@ -54,15 +55,15 @@ class ToDoApp:
          return None
 
       with next(self._get_db_session()) as db:
-         return (db.query(DBList)
-                 .options(selectinload(DBList.tasks))
-                 .filter(DBList.id == self.selected_list_id)
-                 .first())
+         self.current_list_tasks = (db.query(DBList)
+                                    .options(selectinload(DBList.tasks))
+                                    .filter(DBList.id == self.selected_list_id)
+                                    .first())
       
 
 
 
-   # TASKS Operation
+   # TASKS Operation    
    def add_new_task(self, description: str):
       if self.selected_list_id is None:
          return
@@ -72,18 +73,17 @@ class ToDoApp:
          db.add(new_task)
          db.commit()
 
+   
    def toggle_task_complete(self, task_index: int):
-      selected_list = self.get_selected_list_data()
-      # if no selected lists or selected lists has no tasks
-      if not selected_list or not selected_list.tasks:
+      if not self.current_list_tasks:
          return
       
-      if 0 <= task_index < len(selected_list.tasks):
-         task_to_toggle = selected_list.tasks[task_index]
+      if 0 <= task_index < len(self.current_list_tasks.tasks):
+         task_to_toggle = self.current_list_tasks.tasks[task_index]
          
          with next(self._get_db_session()) as db:
             db_task = db.query(DBTask).get(task_to_toggle.id)
-            db_task.completed = not db_task.completed
+            db_task.is_completed = not db_task.is_completed
             db.commit()
 
 
