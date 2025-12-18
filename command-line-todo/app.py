@@ -54,7 +54,10 @@ class ToDoApp:
          return None
 
       with next(self._get_db_session()) as db:
-         return db.query(DBList).filter(DBList.id == self.selected_list_id).first()
+         return (db.query(DBList)
+                 .options(selectinload(DBList.tasks))
+                 .filter(DBList.id == self.selected_list_id)
+                 .first())
       
 
 
