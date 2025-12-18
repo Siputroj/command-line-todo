@@ -5,7 +5,7 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.styles import Style
 
 
-from layout.main_view import main_layout
+from layout.view import main_layout
 from key_bindings import kb
 
 kb2 = KeyBindings
